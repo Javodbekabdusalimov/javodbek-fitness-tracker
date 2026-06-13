@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Javodbek Fitness Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07071a;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.1);
+  --og:#ff6b35;--og2:#ff8c42;--gn:#22c55e;--bl:#3b82f6;--rd:#ef4444;
+  --yl:#eab308;--pu:#a855f7;--tx:#f1f5f9;--mu:rgba(241,245,249,0.5);--nh:72px
+}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  min-height:100dvh;padding-bottom:var(--nh);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#12002e,#1a0545 50%,#0d1a3e);
+  padding:20px 20px 26px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-60px;right:-40px;width:260px;height:260px;
+  background:radial-gradient(circle,rgba(255,107,53,.3) 0%,transparent 70%);border-radius:50%}
+.hdr::after{content:'';position:absolute;bottom:-50px;left:-20px;width:180px;height:180px;
+  background:radial-gradient(circle,rgba(34,197,94,.18) 0%,transparent 70%);border-radius:50%}
+.hc{position:relative;z-index:1}
+.htop{display:flex;justify-content:space-between;align-items:flex-start}
+.hgreet{font-size:13px;color:var(--mu)}
+.hname{font-size:24px;font-weight:800;margin-top:2px}
+.hava{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--og),var(--og2));
+  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex-shrink:0}
+.hchips{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.15);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.chip.og{background:rgba(255,107,53,0.2);border-color:rgba(255,107,53,0.4);color:var(--og)}
+.chip.gn{background:rgba(34,197,94,0.2);border-color:rgba(34,197,94,0.4);color:var(--gn)}
+.chip.pu{background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.4);color:var(--pu)}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;height:var(--nh);background:rgba(7,7,26,0.95);
+  backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-around;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.nb{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 14px;
+  cursor:pointer;border:none;background:none;color:var(--mu);transition:color .2s;border-radius:12px}
+.nb.on{color:var(--og)}.nb svg{width:22px;height:22px}
+.nb span{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+/* SECTIONS */
+.sec{display:none}.sec.on{display:block}
+.wrap{max-width:500px;margin:0 auto;padding:14px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px}
+.ctitle{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mu);margin-bottom:12px;font-weight:700}
+
+/* CALORIE RING */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;padding:4px 0 8px}
+.ring-svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:14}
+.ring-prog{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1s ease,stroke .3s}
+.ring-center{text-align:center;margin-top:-180px;height:180px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;pointer-events:none}
+.ring-eaten{font-size:36px;font-weight:900;line-height:1}
+.ring-max{font-size:13px;color:var(--mu);margin-top:1px}
+.ring-lbl{font-size:11px;color:var(--mu);margin-top:1px}
+.ring-remain{font-size:14px;font-weight:700;margin-top:4px}
+
+/* MAX CALORIE BAR */
+.max-bar-wrap{margin-top:4px}
+.max-bar-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:4px}
+.max-bar{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.max-bar-fill{height:100%;border-radius:4px;transition:width 1s ease}
+
+/* MACROS */
+.macro{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.macro-nm{font-size:12px;color:var(--mu);width:75px}
+.macro-trk{flex:1;height:7px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.macro-fill{height:100%;border-radius:4px;transition:width .8s ease}
+.macro-val{font-size:12px;font-weight:700;width:55px;text-align:right}
+
+/* STAT GRID */
+.sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center}
+.sval{font-size:20px;font-weight:800}.slbl{font-size:11px;color:var(--mu);margin-top:2px}
+
+/* MEAL LIST */
+.ml-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.ml-item:last-child{border-bottom:none}
+.ml-dot{width:8px;height:8px;border-radius:50%;background:var(--og);flex-shrink:0;margin-top:5px}
+.ml-dot.done{background:var(--gn)}
+.ml-time{font-size:11px;font-weight:700;min-width:42px}
+.ml-time.done{color:var(--gn)}.ml-time.pending{color:var(--og)}
+.ml-info{flex:1}
+.ml-nm{font-size:13px;font-weight:700}
+.ml-desc{font-size:12px;color:var(--mu);margin-top:2px;line-height:1.4}
+.ml-kcal{font-size:17px;font-weight:900;text-align:right;flex-shrink:0}
+.ml-kcal small{display:block;font-size:10px;font-weight:400;color:var(--mu)}
+
+/* WATER */
+.wgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:8px}
+.wc{aspect-ratio:1;border-radius:8px;background:rgba(59,130,246,0.1);
+  border:1.5px solid rgba(59,130,246,0.2);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;font-size:12px}
+.wc.on{background:rgba(59,130,246,0.4);border-color:var(--bl)}
+
+/* DAY CHIPS */
+.dscroll{display:flex;gap:8px;overflow-x:auto;padding:14px 14px 4px;scrollbar-width:none}
+.dscroll::-webkit-scrollbar{display:none}
+.dchip{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--mu);transition:all .2s;white-space:nowrap}
+.dchip.today{border-color:var(--og);color:var(--tx)}
+.dchip.active{background:var(--og);border-color:var(--og);color:#fff}
+
+/* WEEK MEAL CARD */
+.wmc{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px}
+.wmc-hd{display:flex;align-items:center;padding:12px 14px;gap:10px}
+.time-badge{background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);
+  color:var(--og);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.wmc-body{flex:1}
+.wmc-type{font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.wmc-name{font-size:13px;font-weight:700;margin-top:2px}
+.wmc-kcal{font-size:20px;font-weight:900;color:var(--og);flex-shrink:0}
+.wmc-kcal small{display:block;font-size:10px;font-weight:400;color:var(--mu)}
+.wmc-items{padding:0 14px 12px;border-top:1px solid rgba(255,255,255,0.05)}
+.wmc-items ul{list-style:none;margin-top:8px}
+.wmc-items li{font-size:12px;color:var(--mu);padding:3px 0;display:flex;gap:6px;line-height:1.4}
+.wmc-items li::before{content:'•';color:var(--og);flex-shrink:0}
+
+/* DAY BUDGET CARD */
+.budget-card{background:linear-gradient(135deg,rgba(255,107,53,0.12),rgba(168,85,247,0.1));
+  border:1px solid rgba(255,107,53,0.25);border-radius:16px;padding:14px;margin-bottom:10px}
+.budget-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;gap:8px}
+.budget-val{font-size:28px;font-weight:900;color:var(--og)}
+.budget-lbl{font-size:12px;color:var(--mu);margin-top:2px}
+.budget-stats{display:flex;gap:14px}
+.bstat{text-align:center}
+.bstat-val{font-size:16px;font-weight:800}
+.bstat-lbl{font-size:10px;color:var(--mu)}
+
+/* FOOD SEARCH */
+.sinp-wrap{position:relative;margin-bottom:12px}
+.sinp-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:16px}
+.sinp{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:14px;
+  padding:13px 16px 13px 42px;color:var(--tx);font-size:15px;outline:none;transition:border-color .2s}
+.sinp:focus{border-color:var(--og)}.sinp::placeholder{color:var(--mu)}
+
+.flist{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.frow{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.05);
+  cursor:pointer;transition:background .15s;gap:10px}
+.frow:last-child{border-bottom:none}.frow:hover{background:rgba(255,255,255,0.04)}
+.femi{font-size:22px;flex-shrink:0;width:30px;text-align:center}
+.fnm{font-size:14px;font-weight:600}.fsub{font-size:11px;color:var(--mu);margin-top:1px}
+.fkcal{background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);
+  color:var(--og);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
+
+/* LOG */
+.logitem{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.logitem:last-child{border-bottom:none}
+.lemi{font-size:22px;width:32px;text-align:center;flex-shrink:0}
+.linfo{flex:1}.lnm{font-size:13px;font-weight:700}.lmeta{font-size:11px;color:var(--mu);margin-top:1px}
+.lkcal{font-size:16px;font-weight:800;color:var(--og);flex-shrink:0}
+.ldel{background:rgba(239,68,68,0.15);border:none;color:var(--rd);width:28px;height:28px;
+  border-radius:8px;cursor:pointer;font-size:12px;flex-shrink:0}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+  z-index:500;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.on{opacity:1;pointer-events:all}
+.modal{background:#13133a;border:1px solid var(--border);border-radius:24px 24px 0 0;
+  padding:22px;width:100%;max-width:500px;transform:translateY(100%);transition:transform .3s ease}
+.overlay.on .modal{transform:translateY(0)}
+.mhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+.mtitle{font-size:19px;font-weight:800;margin-bottom:2px}
+.msub{font-size:12px;color:var(--mu);margin-bottom:16px}
+.unit-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.ubtn{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:transparent;
+  color:var(--tx);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.ubtn.on{background:var(--og);border-color:var(--og);color:#fff}
+.qrow{display:flex;align-items:center;gap:10px;margin:12px 0}
+.qbtn{width:46px;height:46px;border-radius:14px;background:var(--card);border:1px solid var(--border);
+  color:var(--tx);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qinp{flex:1;text-align:center;background:var(--card);border:1.5px solid var(--border);border-radius:14px;
+  padding:12px;color:var(--tx);font-size:26px;font-weight:800;outline:none}
+.qinp:focus{border-color:var(--og)}
+.kcprev{background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.2);
+  border-radius:14px;padding:14px;text-align:center;margin-bottom:14px}
+.kcprev-val{font-size:34px;font-weight:900;color:var(--og)}
+.kcprev-lbl{font-size:11px;color:var(--mu);margin-top:3px}
+.mprevs{display:flex;justify-content:space-around;margin-top:10px}
+.mpv{text-align:center}.mpv-val{font-size:15px;font-weight:700}.mpv-lbl{font-size:10px;color:var(--mu)}
+
+/* BUTTONS */
+.btn{width:100%;padding:14px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--og),var(--og2));color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--tx);margin-top:8px}
+
+/* SCAN */
+.scan-area{position:relative;border-radius:18px;overflow:hidden;background:#000;border:2px solid var(--border)}
+#scan-video{width:100%;display:block;max-height:300px;object-fit:cover}
+.scan-overlay-ui{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.scan-frame{width:200px;height:200px;position:relative}
+.sc{position:absolute;width:28px;height:28px;border-color:var(--og);border-style:solid}
+.sc.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0}
+.sc.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0}
+.sc.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px}
+.sc.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
+.sline{position:absolute;left:10px;right:10px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--og),transparent);
+  animation:sla 2s ease-in-out infinite}
+@keyframes sla{0%{top:0;opacity:1}50%{top:100%}100%{top:0;opacity:1}}
+.scan-hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:12px;
+  color:rgba(255,255,255,.75);font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.scan-res{background:var(--card);border:1.5px solid var(--gn);border-radius:16px;padding:14px;margin-top:12px}
+.srname{font-size:17px;font-weight:800;margin-bottom:2px}
+.srbrand{font-size:12px;color:var(--mu);margin-bottom:10px}
+.srmacros{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.sm{background:rgba(255,255,255,0.05);border-radius:10px;padding:8px;text-align:center}
+.sm-val{font-size:15px;font-weight:800}.sm-lbl{font-size:10px;color:var(--mu)}
+.binp{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:14px;
+  padding:13px;color:var(--tx);font-size:16px;font-weight:700;letter-spacing:2px;text-align:center;outline:none}
+.binp:focus{border-color:var(--og)}.binp::placeholder{color:var(--mu);letter-spacing:normal;font-weight:400}
+
+/* PROGRESS */
+.goal-card{background:linear-gradient(135deg,rgba(255,107,53,0.12),rgba(168,85,247,0.12));
+  border:1px solid rgba(255,107,53,0.2);border-radius:18px;padding:16px;margin-bottom:12px}
+.goal-bar{height:12px;background:rgba(255,255,255,0.1);border-radius:6px;overflow:hidden;margin:10px 0}
+.goal-fill{height:100%;background:linear-gradient(90deg,var(--og),var(--pu));border-radius:6px;transition:width 1.2s ease}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px}
+.pval{font-size:26px;font-weight:900}.plbl{font-size:11px;color:var(--mu);margin-top:3px}
+.winp{flex:1;background:rgba(255,255,255,0.08);border:1.5px solid var(--border);border-radius:14px;
+  padding:13px;color:var(--tx);font-size:22px;font-weight:800;outline:none;text-align:center}
+.winp:focus{border-color:var(--og)}
+.wbtn{padding:13px 18px;border-radius:14px;background:var(--og);border:none;color:#fff;
+  font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0}
+.chart-wrap{position:relative;height:200px}
+
+/* TOAST */
+.toast{position:fixed;bottom:85px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:#1a1a3e;border:1px solid var(--gn);color:var(--gn);padding:11px 22px;
+  border-radius:28px;font-size:13px;font-weight:700;z-index:600;
+  transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 28px rgba(34,197,94,.2)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:var(--rd);color:var(--rd)}
+
+/* UTILS */
+.fb{display:flex;justify-content:space-between;align-items:center}
+.fg{display:flex;align-items:center;gap:8px}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}.fs14{font-size:14px}
+.fs16{font-size:16px}.fs20{font-size:20px}.fs22{font-size:22px}
+.fw7{font-weight:700}.fw8{font-weight:800}.fw9{font-weight:900}
+.text-og{color:var(--og)}.text-gn{color:var(--gn)}.text-rd{color:var(--rd)}
+.text-mu{color:var(--mu)}.text-bl{color:var(--bl)}.text-pu{color:var(--pu)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.bog{background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);color:var(--og)}
+.bgn{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:var(--gn)}
+.brd{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--rd)}
+.div{height:1px;background:var(--border);margin:10px 0}
+.empty{text-align:center;padding:28px 16px;color:var(--mu)}
+.empty-ico{font-size:36px;margin-bottom:8px}.empty-txt{font-size:13px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .3s ease forwards}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}.pulse{animation:pulse2 2s infinite}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hc">
+    <div class="htop">
+      <div>
+        <div class="hgreet" id="h-greet">Salom,</div>
+        <div class="hname">Javodbek 💪</div>
+      </div>
+      <div class="hava">JA</div>
+    </div>
+    <div class="hchips">
+      <div class="chip" id="h-date">📅 …</div>
+      <div class="chip og" id="h-day">🗓️ …</div>
+      <div class="chip gn">🎯 Maqsad: -20 kg / 60 kun</div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ TODAY ══ -->
+<div id="sec-today" class="sec on">
+<div class="wrap">
+
+  <!-- RING -->
+  <div class="card anim">
+    <div class="fb" style="margin-bottom:4px">
+      <div class="ctitle" style="margin:0">🔥 Bugungi Kaloriya</div>
+      <div class="badge bog" id="today-max-badge">maks: …</div>
+    </div>
+    <div class="ring-wrap">
+      <svg class="ring-svg" width="180" height="180" viewBox="0 0 180 180">
+        <circle class="ring-bg" cx="90" cy="90" r="76"/>
+        <circle class="ring-prog" id="ring-c" cx="90" cy="90" r="76"
+          stroke="var(--og)" stroke-dasharray="477.5" stroke-dashoffset="477.5"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-eaten" id="ring-eaten" style="color:var(--og)">0</div>
+        <div class="ring-max" id="ring-max-lbl">/ 1350 kkal</div>
+        <div class="ring-lbl">yedingiz</div>
+        <div class="ring-remain" id="ring-remain"></div>
+      </div>
+    </div>
+    <!-- PROGRESS BAR -->
+    <div class="max-bar-wrap">
+      <div class="max-bar-labels">
+        <span id="mbl-eaten">0 kkal yedingiz</span>
+        <span id="mbl-max">maks 1350 kkal</span>
+      </div>
+      <div class="max-bar"><div class="max-bar-fill" id="mbar" style="width:0%;background:var(--og)"></div></div>
+    </div>
+    <!-- MACROS -->
+    <div style="margin-top:12px">
+      <div class="macro"><div class="macro-nm">Oqsil</div>
+        <div class="macro-trk"><div class="macro-fill" id="mp" style="width:0%;background:var(--bl)"></div></div>
+        <div class="macro-val text-bl" id="mpv">0g</div></div>
+      <div class="macro"><div class="macro-nm">Uglevodlar</div>
+        <div class="macro-trk"><div class="macro-fill" id="mc" style="width:0%;background:var(--yl)"></div></div>
+        <div class="macro-val" id="mcv" style="color:var(--yl)">0g</div></div>
+      <div class="macro"><div class="macro-nm">Yog'</div>
+        <div class="macro-trk"><div class="macro-fill" id="mf" style="width:0%;background:var(--rd)"></div></div>
+        <div class="macro-val text-rd" id="mfv">0g</div></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="sgrid anim">
+    <div class="scard">
+      <div class="sval text-og" id="qs-burn">~2900</div>
+      <div class="slbl">kkal yoqiladi</div>
+    </div>
+    <div class="scard">
+      <div class="sval text-gn" id="qs-def">—</div>
+      <div class="slbl">defitsit</div>
+    </div>
+    <div class="scard">
+      <div class="sval" style="color:var(--yl)" id="qs-streak">🔥 0</div>
+      <div class="slbl">kun ketma-ket</div>
+    </div>
+  </div>
+
+  <!-- TODAY MEALS -->
+  <div class="card anim">
+    <div class="fb">
+      <div class="ctitle" style="margin:0">🍽️ Bugungi Ratsion</div>
+      <div id="today-theme-badge" class="badge bog"></div>
+    </div>
+    <div style="margin-top:10px" id="today-meals"></div>
+  </div>
+
+  <!-- WATER -->
+  <div class="card anim">
+    <div class="fb">
+      <div class="ctitle" style="margin:0">💧 Suv Hisobi</div>
+      <div class="fs16 fw9 text-bl" id="water-ml">0 ml</div>
+    </div>
+    <div class="wgrid" id="wgrid"></div>
+    <div class="fb mt8">
+      <div class="fs11 text-mu">Maqsad: 3 litr (12 stakan × 250ml)</div>
+      <div class="fs11 text-mu" id="water-pct">0%</div>
+    </div>
+  </div>
+
+  <!-- TODAY LOG -->
+  <div class="card anim">
+    <div class="fb">
+      <div class="ctitle" style="margin:0">📋 Yegan Ovqatlar</div>
+      <button onclick="showSec('sec-add')" class="badge bog" style="cursor:pointer;border:0">+ Qo'shish</button>
+    </div>
+    <div id="today-log" style="margin-top:10px"></div>
+  </div>
+
+  <!-- EXERCISE -->
+  <div class="card anim" id="ex-card"></div>
+
+  <!-- RULES -->
+  <div class="card anim">
+    <div class="ctitle">⚠️ Qat'iy Qoidalar</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <span style="font-size:18px;flex-shrink:0">💧</span>
+        <span class="fs12 text-mu">Har kuni <strong style="color:var(--tx)">3 litr toza suv</strong> — kechgacha tamom bo'lsin.</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <span style="font-size:18px;flex-shrink:0">🌙</span>
+        <span class="fs12 text-mu"><strong style="color:var(--tx)">22:00 dan keyin</strong> faqat 1 dona bodring yoki iliq suv.</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <span style="font-size:18px;flex-shrink:0">🚫</span>
+        <span class="fs12 text-mu"><strong style="color:var(--tx)">Shokolad, muzqaymoq, shirin choy</strong> — mutlaqo 0. Shirin xohlasang — Cola Zero.</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <span style="font-size:18px;flex-shrink:0">🍞</span>
+        <span class="fs12 text-mu">Ko'rsatilmagan holda <strong style="color:var(--tx)">non, osh, uglevod</strong> yeyilmaydi.</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:9px 0">
+        <span style="font-size:18px;flex-shrink:0">🏃</span>
+        <span class="fs12 text-mu"><strong style="color:var(--tx)">45 daqiqa tez yurish</strong> har kun majburiy (Yakshanba: 60 daqiqa).</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ WEEK ══ -->
+<div id="sec-week" class="sec">
+  <div class="dscroll" id="dscroll"></div>
+  <div class="wrap" id="week-content"></div>
+</div>
+
+<!-- ══ ADD ══ -->
+<div id="sec-add" class="sec">
+<div class="wrap">
+  <div class="fs20 fw8" style="margin-bottom:14px">🍽️ Ovqat Qo'shish</div>
+  <div class="sinp-wrap">
+    <div class="sinp-ico">🔍</div>
+    <input class="sinp" id="fsearch" placeholder="Ovqat nomini yozing…" oninput="searchFood(this.value,'food-results')">
+  </div>
+  <div id="food-results"></div>
+  <div class="card mt12">
+    <div class="ctitle">⭐ Tez Qo'shiladigan</div>
+    <div id="quick-foods"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SCAN ══ -->
+<div id="sec-scan" class="sec">
+<div class="wrap">
+  <div class="fs20 fw8" style="margin-bottom:6px">📷 Kaloriya Skaneri</div>
+  <div class="fs12 text-mu" style="margin-bottom:14px">Shtrihkodni skanerlang yoki mahsulot nomini qidiring</div>
+
+  <div class="card">
+    <div class="scan-area" id="scan-area">
+      <video id="scan-video" playsinline autoplay muted></video>
+      <div class="scan-overlay-ui" id="scan-ui" style="display:none">
+        <div class="scan-frame">
+          <div class="sc tl"></div><div class="sc tr"></div>
+          <div class="sc bl"></div><div class="sc br"></div>
+          <div class="sline"></div>
+        </div>
+      </div>
+      <div class="scan-hint" id="scan-hint" style="display:none">Shtrihkodni ramka ichiga to'g'rilang</div>
+    </div>
+    <div class="fs12 text-mu" style="text-align:center;padding:10px 0" id="scan-status">
+      Kamera yoqish uchun tugmani bosing
+    </div>
+    <button class="btn btn-primary" id="scan-toggle" onclick="toggleScan()">📷 Kamerani Yoqish</button>
+  </div>
+
+  <div class="card mt12">
+    <div class="ctitle">⌨️ Shtrihkod Qo'lda Kiritish</div>
+    <input class="binp" id="barcode-inp" placeholder="Masalan: 4607048898689" maxlength="20">
+    <button class="btn btn-primary mt12" onclick="doBarcode()">🔍 Qidirish</button>
+  </div>
+
+  <div id="scan-res-area"></div>
+
+  <div class="card mt12">
+    <div class="ctitle">🔤 Nom Bo'yicha Qidirish</div>
+    <div class="sinp-wrap" style="margin-bottom:6px">
+      <div class="sinp-ico">🔍</div>
+      <input class="sinp" id="scan-fsearch" placeholder="Mahsulot nomi…" oninput="searchFood(this.value,'scan-food-res')">
+    </div>
+    <div id="scan-food-res"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══ PROGRESS ══ -->
+<div id="sec-progress" class="sec">
+<div class="wrap">
+
+  <div class="goal-card anim">
+    <div class="fs22 fw9">🎯 20 kg Maqsad — 2 Oy</div>
+    <div class="fs12 text-mu mt8">Boshlanish: <span id="goal-start">—</span></div>
+    <div class="goal-bar"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
+    <div class="fb fs12 text-mu"><span id="goal-lost">0 kg yo'qotilgan</span><span id="goal-rem">20 kg qoldi</span></div>
+    <div class="fb mt12">
+      <div><div class="fs22 fw9 text-og" id="g-days">0</div><div class="fs11 text-mu">kun o'tdi</div></div>
+      <div style="text-align:center"><div class="fs22 fw9 text-gn" id="g-daysleft">60</div><div class="fs11 text-mu">kun qoldi</div></div>
+      <div style="text-align:right"><div class="fs22 fw9 text-pu" id="g-pct">0%</div><div class="fs11 text-mu">bajarildi</div></div>
+    </div>
+  </div>
+
+  <div class="card anim">
+    <div class="ctitle">⚖️ Bugungi Vazn</div>
+    <div class="fg mt8">
+      <input class="winp" id="winp" type="number" step="0.1" min="30" max="350" placeholder="kg kiriting">
+      <button class="wbtn" onclick="saveWeight()">Saqlash ✓</button>
+    </div>
+  </div>
+
+  <div class="pgrid anim">
+    <div class="pcard"><div class="pval text-og" id="ps-start">—</div><div class="plbl">Boshlanish (kg)</div></div>
+    <div class="pcard"><div class="pval text-gn" id="ps-cur">—</div><div class="plbl">Hozirgi (kg)</div></div>
+    <div class="pcard"><div class="pval text-rd" id="ps-lost">—</div><div class="plbl">Yo'qotildi (kg)</div></div>
+    <div class="pcard"><div class="pval text-pu" id="ps-def">—</div><div class="plbl">Jami defitsit (kkal)</div></div>
+  </div>
+
+  <div class="card anim">
+    <div class="ctitle">📈 Vazn Grafigi</div>
+    <div class="chart-wrap"><canvas id="wchart"></canvas></div>
+  </div>
+
+  <div class="card anim">
+    <div class="ctitle">📊 So'nggi 7 Kun Kaloriya</div>
+    <div class="chart-wrap"><canvas id="cchart"></canvas></div>
+  </div>
+
+  <div style="text-align:center;padding:16px 0" class="anim">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--og),var(--og2));
+      padding:10px 24px;border-radius:24px;font-size:16px;font-weight:800">
+      🔥 <span id="streak-count">0</span> kun ketma-ket!
+    </div>
+  </div>
+
+  <button class="btn btn-secondary mt8" onclick="confirmReset()" style="color:var(--rd);border-color:rgba(239,68,68,.3)">
+    🗑️ Barcha Ma'lumotlarni Tozalash
+  </button>
+
+</div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nb on" data-s="sec-today" onclick="showSec('sec-today')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Bugun</span>
+  </button>
+  <button class="nb" data-s="sec-week" onclick="showSec('sec-week')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>Hafta</span>
+  </button>
+  <button class="nb" data-s="sec-add" onclick="showSec('sec-add')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span>Qo'shish</span>
+  </button>
+  <button class="nb" data-s="sec-scan" onclick="showSec('sec-scan')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <span>Scan</span>
+  </button>
+  <button class="nb" data-s="sec-progress" onclick="showSec('sec-progress')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+    <span>Natija</span>
+  </button>
+</nav>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="mtitle">Ovqat qo'shish</div>
+    <div class="msub" id="msub"></div>
+    <div class="unit-row" id="munits"></div>
+    <div class="qrow">
+      <button class="qbtn" onclick="adjQty(-1)">−</button>
+      <input class="qinp" id="qinp" type="number" value="1" min="0.1" step="0.1" oninput="updPrev()">
+      <button class="qbtn" onclick="adjQty(1)">+</button>
+    </div>
+    <div class="kcprev">
+      <div class="kcprev-val" id="mprev-kcal">0</div>
+      <div class="kcprev-lbl">kkal</div>
+      <div class="mprevs">
+        <div class="mpv"><div class="mpv-val text-bl" id="mprev-p">0g</div><div class="mpv-lbl">Oqsil</div></div>
+        <div class="mpv"><div class="mpv-val" id="mprev-c" style="color:var(--yl)">0g</div><div class="mpv-lbl">Uglev.</div></div>
+        <div class="mpv"><div class="mpv-val text-rd" id="mprev-f">0g</div><div class="mpv-lbl">Yog'</div></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="confirmAdd()">✓ Qo'shish</button>
+    <button class="btn btn-secondary" onclick="closeModal()">Bekor qilish</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// MEAL PLAN DATA
+// ══════════════════════════════════════════════════
+const PLAN = [
+  { // 0 = Dushanba
+    nm:"Dushanba", sh:"Du", theme:"Tizimni ishga tushirish", cheat:false,
+    maxKcal:1350, exMin:45, exKm:"5-6", exKcal:475,
+    meals:[
+      {t:"07:30",type:"Nonushta",kcal:196,
+       desc:"3 ta qaynatilgan tuxum (2 oq+1 butun) + qora non + bodring + ko'k choy",
+       items:["2 ta tuxum oqi","1 ta butun tuxum","1 bo'lak qora non (35g)","1 dona bodring","Ko'k choy (shakarsiz)"]},
+      {t:"13:00",type:"Tushlik",kcal:321,
+       desc:"2 six tovuq file shashlik + yog'siz, mayonezsiz svejiy salat",
+       items:["2 six tovuq file shashlik (~200g)","Svejiy salat (yog'siz, mayonezsiz)","Non yeyilmaydi ❌"]},
+      {t:"17:00",type:"Perekus",kcal:138,
+       desc:"1 dona yashil olma + 1 stakan kefir (shakarsiz)",
+       items:["1 dona yashil olma (~150g)","1 stakan kefir 200ml (shakarsiz)"]},
+      {t:"20:30",type:"Kechki ovqat",kcal:185,
+       desc:"150g qaynatilgan/duxovkada tovuq filesi + ko'p ko'katlar",
+       items:["150g tovuq filesi (qaynatilgan/duxovka)","Ko'p ko'katlar + bodring","Non yo'q ❌"]},
+    ]
+  },
+  { // 1 = Seshanba
+    nm:"Seshanba", sh:"Se", theme:"Metabolizmni tezlashtirish", cheat:false,
+    maxKcal:1350, exMin:45, exKm:"5-6", exKcal:475,
+    meals:[
+      {t:"07:30",type:"Nonushta",kcal:333,
+       desc:"3 tuxumdan yog'siz omlet + 1 bo'lak pishloq + shakarsiz qora kofe",
+       items:["3 tuxumdan quruq omlet (yog' yo'q)","1 bo'lak pishloq/sir (30g)","Shakarsiz qora kofe"]},
+      {t:"13:00",type:"Tushlik",kcal:310,
+       desc:"Go'shtli sho'rva (faqat go'sht+sabzavot) + yarimta kulcha non",
+       items:["Go'shtli sho'rva go'sht+sabzavot (~250ml)","Kartoshka va yog'li suv qoldiriladi ❌","Yarimta kulcha non"]},
+      {t:"17:00",type:"Perekus",kcal:71,
+       desc:"100g kam yog'li tvorog (shakarsiz)",
+       items:["100g tvorog (kam yog'li, shakarsiz)"]},
+      {t:"20:30",type:"Kechki ovqat",kcal:100,
+       desc:"3 ta tuxum oqi + bodring va karam salati",
+       items:["3 ta tuxum oqi (qaynatilgan)","Bodring va karam salati (yog'siz)"]},
+    ]
+  },
+  { // 2 = Chorshanba
+    nm:"Chorshanba", sh:"Ch", theme:"Kuch va Energiya", cheat:false,
+    maxKcal:1400, exMin:45, exKm:"5-6", exKcal:475,
+    meals:[
+      {t:"07:30",type:"Nonushta",kcal:252,
+       desc:"4 qoshiq ovsyanka (suvda) + 5 dona bodom + 1 qaynatilgan tuxum",
+       items:["4 qoshiq ovsyanka suvda pishgan","5 dona bodom","1 ta qaynatilgan tuxum (butun)"]},
+      {t:"13:00",type:"Tushlik",kcal:468,
+       desc:"5 qoshiq grechka + 150g qaynatilgan mol go'shti + 1 pomidor",
+       items:["5 qoshiq grechka (yog'siz qaynatilgan)","150g qaynatilgan mol go'shti","1 dona pomidor"]},
+      {t:"17:00",type:"Perekus",kcal:107,
+       desc:"1 dona o'rtacha banan (charchoqni olish uchun)",
+       items:["1 dona o'rtacha banan (~120g)"]},
+      {t:"20:30",type:"Kechki ovqat",kcal:217,
+       desc:"150g duxovkada tovuq + ko'katlar + 1 bodring",
+       items:["150g tovuq filesi (duxovkada)","Ko'p ko'katlar","1 dona bodring"]},
+    ]
+  },
+  { // 3 = Payshanba
+    nm:"Payshanba", sh:"Pa", theme:"Yog'larni eritish maromi", cheat:false,
+    maxKcal:1350, exMin:45, exKm:"5-6", exKcal:475,
+    meals:[
+      {t:"07:30",type:"Nonushta",kcal:196,
+       desc:"3 ta qaynatilgan tuxum (2 oq+1 butun) + qora non + ko'k choy",
+       items:["2 ta tuxum oqi","1 ta butun tuxum","1 bo'lak qora non","Shakarsiz ko'k choy"]},
+      {t:"13:00",type:"Tushlik",kcal:321,
+       desc:"2 six tovuq file shashlik + yog'siz svejiy salat (non yo'q)",
+       items:["2 six tovuq file shashlik (~200g)","Yog'siz svejiy salat","Non yoki uglevod yo'q ❌"]},
+      {t:"17:00",type:"Perekus",kcal:138,
+       desc:"1 dona yashil olma + 1 stakan kefir",
+       items:["1 dona yashil olma","1 stakan kefir (200ml)"]},
+      {t:"20:30",type:"Kechki ovqat",kcal:370,
+       desc:"Bug'da/duxovkada 2 ta go'shtli kotlet + ko'p ko'katlar",
+       items:["2 ta go'shtli kotlet (bug' yoki duxovka)","Ko'p ko'katlar","Non yo'q ❌"]},
+    ]
+  },
+  { // 4 = Juma
+    nm:"Juma", sh:"Ju", theme:"Chidamlilik va Tozalanish", cheat:false,
+    maxKcal:1350, exMin:45, exKm:"5-6", exKcal:475,
+    meals:[
+      {t:"07:30",type:"Nonushta",kcal:253,
+       desc:"2 tuxumdan quruq omlet + 1 bo'lak pishloq + shakarsiz qora kofe",
+       items:["2 tuxumdan quruq omlet (yog' yo'q)","1 bo'lak pishloq/sir (30g)","Shakarsiz qora kofe"]},
+      {t:"13:00",type:"Tushlik",kcal:395,
+       desc:"5 qoshiq yog'siz guruch + 150g duxovkada tovuq + 1 bodring",
+       items:["5 qoshiq guruch (yog'siz qaynatilgan)","150g tovuq filesi (duxovkada)","1 dona bodring"]},
+      {t:"17:00",type:"Perekus",kcal:71,
+       desc:"100g kam yog'li tvorog",
+       items:["100g tvorog (kam yog'li, shakarsiz)"]},
+      {t:"20:30",type:"Kechki ovqat",kcal:134,
+       desc:"3 ta qaynatilgan tuxum oqi + karamli salat",
+       items:["3 ta tuxum oqi (qaynatilgan)","Karam salati (yog'siz)"]},
+    ]
+  },
+  { // 5 = Shanba
+    nm:"Shanba", sh:"Sh", theme:"Haftalik yakuniy zarba", cheat:false,
+    maxKcal:1400, exMin:45, exKm:"5-6", exKcal:475,
+    meals:[
+      {t:"07:30",type:"Nonushta",kcal:272,
+       desc:"4 qoshiq ovsyanka + 5 dona yong'oq + 1 qaynatilgan tuxum",
+       items:["4 qoshiq ovsyanka (suvda)","5 dona yong'oq (gretsiy)","1 qaynatilgan tuxum (butun)"]},
+      {t:"13:00",type:"Tushlik",kcal:320,
+       desc:"Mol go'shtli qaynatma (kartoshkasiz) + yarimta kulcha non",
+       items:["Mol go'shtli qaynatma go'sht+sabzi (~250ml)","Kartoshka va yog'li suv qoldiriladi ❌","Yarimta kulcha non"]},
+      {t:"17:00",type:"Perekus",kcal:107,
+       desc:"1 dona banan",
+       items:["1 dona banan (~120g)"]},
+      {t:"20:30",type:"Kechki ovqat",kcal:125,
+       desc:"150g qaynatilgan tovuq filesi + ko'katlar + bodring",
+       items:["150g tovuq filesi (qaynatilgan)","Ko'p ko'katlar","Bodring"]},
+    ]
+  },
+  { // 6 = Yakshanba
+    nm:"Yakshanba", sh:"Ya", theme:"🎉 Cheat Day / Yuklama kuni", cheat:true,
+    maxKcal:2100, exMin:60, exKm:"7-8", exKcal:600,
+    meals:[
+      {t:"07:30",type:"Nonushta",kcal:196,
+       desc:"3 ta qaynatilgan tuxum (2 oq) + qora non + shakarsiz choy",
+       items:["2 ta tuxum oqi","1 ta butun tuxum","1 bo'lak qora non","Shakarsiz choy"]},
+      {t:"13:00",type:"Tushlik — ERKINLIK ✨",kcal:860,
+       desc:"1 porsiya OYDIN OSH yoki 1 dona Lavash + Cola Zero (Cola/Lipton emas!)",
+       items:["1 porsiya Oydin OSH YOKI 1 dona Lavash","Cola Zero (Cola emas, Lipton emas) ✓","Bu kun erkinlik! Lekin me'yorida."]},
+      {t:"17:00",type:"Perekus",kcal:78,
+       desc:"1 dona yashil olma",
+       items:["1 dona yashil olma (~150g)"]},
+      {t:"20:30",type:"Kechki ovqat (Muvozanat)",kcal:134,
+       desc:"Faqat 2 ta tuxum oqi + bodring (kunduzgi og'irlikni muvozanatlash)",
+       items:["2 ta tuxum oqi (qaynatilgan)","Bodring","Kunduzgi kaloriyani muvozanatlash uchun ❗"]},
+    ]
+  },
+];
+
+// ══════════════════════════════════════════════════
+// FOOD DATABASE
+// ══════════════════════════════════════════════════
+const FOODS = [
+  {id:1,  nm:"Tuxum (butun, qaynatilgan)",      ru:"Яйцо вареное целое",         e:"🥚", kcal:155, p:13,  c:1.1, f:11,  unit:"dona",    gpu:50},
+  {id:2,  nm:"Tuxum oqi (qaynatilgan)",          ru:"Белок яичный вареный",       e:"🥚", kcal:52,  p:11,  c:0.7, f:0.2, unit:"dona",    gpu:34},
+  {id:3,  nm:"Tovuq filesi (qaynatilgan)",       ru:"Куриное филе вареное",       e:"🍗", kcal:113, p:25,  c:0,   f:1.5, unit:"g",       gpu:1},
+  {id:4,  nm:"Tovuq filesi (shashlik, 1 six)",   ru:"Куриное филе шашлык",        e:"🍢", kcal:148, p:26,  c:0,   f:4,   unit:"six",     gpu:100},
+  {id:5,  nm:"Tovuq filesi (duxovkada)",         ru:"Куриное филе в духовке",     e:"🍗", kcal:130, p:26,  c:0,   f:2,   unit:"g",       gpu:1},
+  {id:6,  nm:"Qora non (1 bo'lak ~35g)",         ru:"Черный хлеб кусок",          e:"🍞", kcal:71,  p:2.4, c:14,  f:0.5, unit:"bo'lak",  gpu:35},
+  {id:7,  nm:"Kulcha non (yarimta ~100g)",        ru:"Лепешка половина",           e:"🫓", kcal:260, p:7,   c:55,  f:1.5, unit:"yarimta", gpu:100},
+  {id:8,  nm:"Bodring (1 dona)",                 ru:"Огурец",                     e:"🥒", kcal:15,  p:0.7, c:3,   f:0.1, unit:"dona",    gpu:100},
+  {id:9,  nm:"Pomidor (1 dona)",                 ru:"Помидор",                    e:"🍅", kcal:18,  p:0.9, c:3.8, f:0.2, unit:"dona",    gpu:100},
+  {id:10, nm:"Yashil olma (1 dona ~150g)",       ru:"Зеленое яблоко",             e:"🍏", kcal:78,  p:0.4, c:19,  f:0.3, unit:"dona",    gpu:150},
+  {id:11, nm:"Banan (1 dona ~120g)",             ru:"Банан",                      e:"🍌", kcal:107, p:1.3, c:27,  f:0.4, unit:"dona",    gpu:120},
+  {id:12, nm:"Kefir / Qatiq (1 stakan 200ml)",  ru:"Кефир без сахара",           e:"🥛", kcal:60,  p:6.8, c:8,   f:2,   unit:"stakan",  gpu:200},
+  {id:13, nm:"Tvorog kam yog'li",               ru:"Творог нежирный",            e:"🧀", kcal:71,  p:16,  c:1.8, f:0.6, unit:"g",       gpu:1},
+  {id:14, nm:"Pishloq / Sir (1 bo'lak ~30g)",   ru:"Сыр",                        e:"🧀", kcal:105, p:7.5, c:0,   f:8.1, unit:"bo'lak",  gpu:30},
+  {id:15, nm:"Qora kofe (shakarsiz)",            ru:"Черный кофе без сахара",     e:"☕", kcal:2,   p:0.3, c:0,   f:0,   unit:"stakan",  gpu:200},
+  {id:16, nm:"Ko'k choy (shakarsiz)",            ru:"Зеленый чай без сахара",     e:"🍵", kcal:0,   p:0,   c:0,   f:0,   unit:"stakan",  gpu:200},
+  {id:17, nm:"Ovsyanka suvda (1 qoshiq ~25g)",  ru:"Овсянка на воде",            e:"🥣", kcal:68,  p:2.5, c:12,  f:1.4, unit:"qoshiq",  gpu:25},
+  {id:18, nm:"Grechka qaynatilgan (1 qoshiq)",  ru:"Гречка вареная",             e:"🍚", kcal:28,  p:1,   c:5,   f:0.3, unit:"qoshiq",  gpu:25},
+  {id:19, nm:"Guruch qaynatilgan (1 qoshiq)",   ru:"Рис вареный",                e:"🍚", kcal:33,  p:0.7, c:7,   f:0.1, unit:"qoshiq",  gpu:25},
+  {id:20, nm:"Mol go'shti qaynatilgan",         ru:"Говядина вареная",           e:"🥩", kcal:187, p:29,  c:0,   f:8,   unit:"g",       gpu:1},
+  {id:21, nm:"Go'shtli sho'rva (go'sht+sabzavot)", ru:"Мясной суп мясо+овощи",  e:"🍲", kcal:45,  p:4,   c:3,   f:1.5, unit:"porsiya", gpu:250},
+  {id:22, nm:"Karam salati (yog'siz)",          ru:"Салат из капусты",           e:"🥬", kcal:42,  p:2.7, c:8.1, f:0.2, unit:"tarelka", gpu:150},
+  {id:23, nm:"Svejiy salat (yog'siz)",          ru:"Свежий салат без масла",     e:"🥗", kcal:38,  p:1.5, c:6,   f:0.3, unit:"tarelka", gpu:150},
+  {id:24, nm:"Ko'katlar (aralash, tarelka)",    ru:"Зелень микс",                e:"🌿", kcal:11,  p:1,   c:1.5, f:0.2, unit:"tarelka", gpu:50},
+  {id:25, nm:"Bodom (1 dona ~7g)",              ru:"Миндаль",                    e:"🌰", kcal:41,  p:1.5, c:1.5, f:3.5, unit:"dona",    gpu:7},
+  {id:26, nm:"Yong'oq gretsiy (1 dona ~10g)",  ru:"Грецкий орех",               e:"🌰", kcal:65,  p:1.5, c:1.4, f:6.5, unit:"dona",    gpu:10},
+  {id:27, nm:"Kotlet bug'da (1 dona ~100g)",    ru:"Котлета паровая",            e:"🍖", kcal:175, p:18,  c:5,   f:9,   unit:"dona",    gpu:100},
+  {id:28, nm:"Omlet quruq 2 tuxum",             ru:"Омлет сухой 2 яйца",         e:"🍳", kcal:148, p:12,  c:1,   f:10,  unit:"porsiya", gpu:100},
+  {id:29, nm:"Omlet quruq 3 tuxum",             ru:"Омлет сухой 3 яйца",         e:"🍳", kcal:228, p:18,  c:1.5, f:16,  unit:"porsiya", gpu:150},
+  {id:30, nm:"Osh / Plov (1 porsiya ~350g)",    ru:"Плов",                       e:"🍛", kcal:858, p:28,  c:112, f:35,  unit:"porsiya", gpu:350},
+  {id:31, nm:"Lavash (1 dona ~100g)",           ru:"Лаваш",                      e:"🌯", kcal:260, p:7,   c:56,  f:1.5, unit:"dona",    gpu:100},
+  {id:32, nm:"Cola Zero (1 banka 330ml)",       ru:"Кола Зеро",                  e:"🥤", kcal:1,   p:0,   c:0,   f:0,   unit:"banka",   gpu:330},
+  {id:33, nm:"Suv (1 stakan 250ml)",            ru:"Вода",                       e:"💧", kcal:0,   p:0,   c:0,   f:0,   unit:"stakan",  gpu:250},
+  {id:34, nm:"Mol go'shti kotleti duxovkada",  ru:"Котлета говядина духовка",   e:"🍖", kcal:198, p:22,  c:4.4, f:9.9, unit:"dona",    gpu:110},
+  {id:35, nm:"Tvorog 0% (100g)",               ru:"Творог 0%",                  e:"🥛", kcal:60,  p:18,  c:3.5, f:0,   unit:"g",       gpu:1},
+];
+
+const QUICK_IDS = [1,2,3,4,8,10,12,13,15,16,17,18,25,32];
+
+// ══════════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════════
+const K = {log:'jft_log', water:'jft_water', weight:'jft_weight', start:'jft_start', streak:'jft_streak'};
+const ld = (k,d) => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):d; } catch { return d; } };
+const sv = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function getLog(dt) { const a=ld(K.log,{}); return a[dt]||[]; }
+function getTotals(dt) {
+  return getLog(dt).reduce((a,x)=>({kcal:a.kcal+x.kcal, p:a.p+x.p, c:a.c+x.c, f:a.f+x.f}),
+    {kcal:0,p:0,c:0,f:0});
+}
+
+// ══════════════════════════════════════════════════
+// DAY INDEX  (Mon=0 … Sun=6)
+// ══════════════════════════════════════════════════
+function dayIdx() {
+  const map=[6,0,1,2,3,4,5]; // JS: Sun=0→6, Mon=1→0, …
+  return map[new Date().getDay()];
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function showSec(id) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  const nb = document.querySelector('[data-s="'+id+'"]');
+  if (nb) nb.classList.add('on');
+  window.scrollTo(0,0);
+  if (id==='sec-week')     renderWeek(dayIdx());
+  if (id==='sec-progress') renderProgress();
+  if (id!=='sec-scan')     stopScan();
+}
+
+// ══════════════════════════════════════════════════
+// HEADER
+// ══════════════════════════════════════════════════
+const MO=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+function renderHeader() {
+  const now=new Date(), di=dayIdx(), plan=PLAN[di];
+  const hr=now.getHours();
+  document.getElementById('h-greet').textContent = (hr<12?'Xayrli tong':hr<17?'Xayrli kun':'Xayrli kech')+',';
+  document.getElementById('h-date').textContent = '📅 '+now.getDate()+' '+MO[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('h-day').textContent  = '🗓️ '+plan.nm+' — '+plan.theme;
+}
+
+// ══════════════════════════════════════════════════
+// TODAY
+// ══════════════════════════════════════════════════
+function renderToday() {
+  const di=dayIdx(), plan=PLAN[di], dt=todayStr();
+  const tot=getTotals(dt), max=plan.maxKcal;
+  const pct=Math.min(tot.kcal/max,1);
+  const circumference=2*Math.PI*76;
+
+  // Ring
+  const c=document.getElementById('ring-c');
+  c.style.strokeDashoffset = circumference-(pct*circumference);
+  const over=tot.kcal>max;
+  c.style.stroke = over ? 'var(--rd)' : pct>0.85 ? 'var(--yl)' : 'var(--og)';
+
+  const eEl=document.getElementById('ring-eaten');
+  eEl.textContent = Math.round(tot.kcal);
+  eEl.style.color = over ? 'var(--rd)' : 'var(--og)';
+
+  document.getElementById('ring-max-lbl').textContent = '/ '+max+' kkal';
+
+  const rem = max - tot.kcal;
+  const remEl=document.getElementById('ring-remain');
+  remEl.textContent = over ? Math.round(-rem)+' kkal oshdi!' : Math.round(rem)+' kkal qoldi';
+  remEl.style.color = over ? 'var(--rd)' : 'var(--gn)';
+
+  // Max badge & bar
+  document.getElementById('today-max-badge').textContent = 'Maks: '+max+' kkal';
+  document.getElementById('mbl-eaten').textContent = Math.round(tot.kcal)+' kkal yedingiz';
+  document.getElementById('mbl-max').textContent   = 'Maks '+max+' kkal';
+  const bar=document.getElementById('mbar');
+  bar.style.width = (pct*100)+'%';
+  bar.style.background = over ? 'var(--rd)' : pct>0.85 ? 'var(--yl)' : 'var(--og)';
+
+  // Macros
+  const maxP=120,maxC=130,maxF=45;
+  document.getElementById('mp').style.width  = Math.min(tot.p/maxP*100,100)+'%';
+  document.getElementById('mc').style.width  = Math.min(tot.c/maxC*100,100)+'%';
+  document.getElementById('mf').style.width  = Math.min(tot.f/maxF*100,100)+'%';
+  document.getElementById('mpv').textContent = Math.round(tot.p)+'g';
+  document.getElementById('mcv').textContent = Math.round(tot.c)+'g';
+  document.getElementById('mfv').textContent = Math.round(tot.f)+'g';
+
+  // Stats
+  const burned = 2000+400+plan.exKcal;
+  document.getElementById('qs-burn').textContent = '~'+burned;
+  const def=burned-tot.kcal;
+  const dEl=document.getElementById('qs-def');
+  dEl.textContent = (def>=0?'+':'')+Math.round(def);
+  dEl.style.color = def>=0 ? 'var(--gn)' : 'var(--rd)';
+  document.getElementById('qs-streak').textContent = '🔥 '+getStreak();
+  document.getElementById('streak-count').textContent = getStreak();
+
+  // Today theme badge
+  const tb=document.getElementById('today-theme-badge');
+  tb.textContent = plan.nm+(plan.cheat?' 🎉':'');
+  tb.className = 'badge '+(plan.cheat?'bgn':'bog');
+
+  // Meals from plan
+  const now=new Date();
+  const nowMin=now.getHours()*60+now.getMinutes();
+  document.getElementById('today-meals').innerHTML = plan.meals.map(m=>{
+    const [h,min]=m.t.split(':').map(Number);
+    const done=nowMin>h*60+min+60;
+    const col=done?'var(--gn)':nowMin>h*60+min-15?'var(--og)':'var(--mu)';
+    return `<div class="ml-item">
+      <div class="ml-dot${done?' done':''}"></div>
+      <div class="ml-time${done?' done':' pending'}">${m.t}</div>
+      <div class="ml-info">
+        <div class="ml-nm">${m.type}</div>
+        <div class="ml-desc">${m.desc}</div>
+      </div>
+      <div class="ml-kcal" style="color:${col}">~${m.kcal}<small>kkal</small></div>
+    </div>`;
+  }).join('');
+
+  // Log
+  renderLog();
+  // Water
+  renderWater();
+  // Exercise
+  document.getElementById('ex-card').innerHTML = `
+    <div class="ctitle">🏃 Kechki Harakat — 21:15</div>
+    <div class="fb">
+      <div>
+        <div class="fs16 fw8 text-og">${plan.exMin} daqiqa tez yurish</div>
+        <div class="fs12 text-mu mt8">Kamida ${plan.exKm} km — taxminan ${plan.exKcal} kkal yoqiladi</div>
+        ${plan.cheat?'<div class="badge brd" style="margin-top:8px">⚠️ Bugun MAJBURIY 60 daqiqa!</div>':''}
+      </div>
+      <div style="text-align:right">
+        <div class="fs22 fw9 text-og">21:15</div>
+        <div class="fs12 text-mu">start</div>
+      </div>
+    </div>`;
+}
+
+function renderLog() {
+  const log=getLog(todayStr());
+  const el=document.getElementById('today-log');
+  if (!log.length) {
+    el.innerHTML='<div class="empty"><div class="empty-ico">🍽️</div><div class="empty-txt">Hali hech narsa qo\'shilmagan.<br>Yegan ovqatlaringizni qo\'shing!</div></div>';
+    return;
+  }
+  el.innerHTML=log.map((x,i)=>`
+    <div class="logitem">
+      <div class="lemi">${x.emoji}</div>
+      <div class="linfo">
+        <div class="lnm">${x.name}</div>
+        <div class="lmeta">${x.qty} ${x.unit} · ${Math.round(x.p)}g oqsil · ${Math.round(x.c)}g uglev.</div>
+      </div>
+      <div class="lkcal">${Math.round(x.kcal)}</div>
+      <button class="ldel" onclick="delLog(${i})">✕</button>
+    </div>`).join('');
+}
+
+function delLog(i) {
+  const a=ld(K.log,{}), dt=todayStr();
+  if (!a[dt]) return;
+  a[dt].splice(i,1); sv(K.log,a);
+  renderToday(); showToast('O\'chirildi',true);
+}
+
+// ══════════════════════════════════════════════════
+// WATER
+// ══════════════════════════════════════════════════
+function renderWater() {
+  const dt=todayStr(), a=ld(K.water,{}), cups=a[dt]||0;
+  document.getElementById('wgrid').innerHTML=
+    Array.from({length:12},(_,i)=>`<div class="wc${i<cups?' on':''}" onclick="setWater(${i})">💧</div>`).join('');
+  const ml=cups*250;
+  document.getElementById('water-ml').textContent = ml>=1000?(ml/1000).toFixed(1)+' l':ml+' ml';
+  document.getElementById('water-pct').textContent = Math.round(cups/12*100)+'%';
+}
+function setWater(i) {
+  const dt=todayStr(), a=ld(K.water,{});
+  a[dt] = (a[dt]||0)===i+1 ? i : i+1;
+  sv(K.water,a); renderWater();
+}
+
+// ══════════════════════════════════════════════════
+// STREAK
+// ══════════════════════════════════════════════════
+function updateStreak() {
+  const dt=todayStr(), s=ld(K.streak,{last:'',count:0});
+  if (s.last===dt) return;
+  const yd=new Date(); yd.setDate(yd.getDate()-1);
+  s.count = s.last===yd.toISOString().slice(0,10) ? s.count+1 : 1;
+  s.last=dt; sv(K.streak,s);
+}
+function getStreak() { return ld(K.streak,{count:0}).count; }
+
+// ══════════════════════════════════════════════════
+// WEEK VIEW
+// ══════════════════════════════════════════════════
+let wDay=0;
+function renderWeek(idx) {
+  wDay=idx;
+  const ti=dayIdx();
+  document.getElementById('dscroll').innerHTML=PLAN.map((d,i)=>
+    `<div class="dchip${i===ti?' today':''}${i===idx?' active':''}" onclick="renderWeek(${i})">${d.sh} — ${d.nm}</div>`
+  ).join('');
+  const p=PLAN[idx], total=p.meals.reduce((s,m)=>s+m.kcal,0);
+  const burned=2000+400+p.exKcal;
+  document.getElementById('week-content').innerHTML=`
+    <div class="budget-card">
+      <div class="budget-row">
+        <div>
+          <div class="fs22 fw9">${p.nm}</div>
+          <div class="fs12 text-mu mt8">${p.theme}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="budget-val">${p.maxKcal}</div>
+          <div class="budget-lbl">maks kkal/kun</div>
+        </div>
+      </div>
+      <div class="div"></div>
+      <div class="budget-stats">
+        <div class="bstat"><div class="bstat-val text-og">~${total}</div><div class="bstat-lbl">Ratsion kkal</div></div>
+        <div class="bstat"><div class="bstat-val text-gn">~${burned}</div><div class="bstat-lbl">Yoqiladi</div></div>
+        <div class="bstat"><div class="bstat-val text-pu">~${burned-total}</div><div class="bstat-lbl">Defitsit</div></div>
+        <div class="bstat"><div class="bstat-val text-bl">${p.exMin} daq</div><div class="bstat-lbl">Yurish</div></div>
+      </div>
+    </div>
+    ${p.meals.map(m=>`
+      <div class="wmc">
+        <div class="wmc-hd">
+          <div class="time-badge">⏰ ${m.t}</div>
+          <div class="wmc-body">
+            <div class="wmc-type">${m.type}</div>
+            <div class="wmc-name">${m.desc.split('+')[0].trim().slice(0,50)}</div>
+          </div>
+          <div class="wmc-kcal">~${m.kcal}<small>kkal</small></div>
+        </div>
+        <div class="wmc-items"><ul>${m.items.map(it=>`<li>${it}</li>`).join('')}</ul></div>
+      </div>`).join('')}`;
+}
+
+// ══════════════════════════════════════════════════
+// FOOD SEARCH
+// ══════════════════════════════════════════════════
+function searchFood(q, targetId) {
+  const el=document.getElementById(targetId);
+  if (!q.trim()) { el.innerHTML=''; return; }
+  const res=FOODS.filter(f=>
+    f.nm.toLowerCase().includes(q.toLowerCase())||
+    f.ru.toLowerCase().includes(q.toLowerCase())
+  ).slice(0,10);
+  if (!res.length) { el.innerHTML='<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">Topilmadi</div></div>'; return; }
+  el.innerHTML='<div class="flist">'+res.map(f=>`
+    <div class="frow" onclick="openModal(${f.id})">
+      <div class="femi">${f.e}</div>
+      <div style="flex:1">
+        <div class="fnm">${f.nm}</div>
+        <div class="fsub">${f.ru}</div>
+      </div>
+      <div class="fkcal">${Math.round(f.kcal*f.gpu/100)} kkal/1 ${f.unit}</div>
+    </div>`).join('')+'</div>';
+}
+
+function renderQuickFoods() {
+  document.getElementById('quick-foods').innerHTML='<div class="flist">'+
+    QUICK_IDS.map(id=>{ const f=FOODS.find(x=>x.id===id); if(!f) return '';
+      return `<div class="frow" onclick="openModal(${f.id})">
+        <div class="femi">${f.e}</div>
+        <div style="flex:1"><div class="fnm">${f.nm}</div><div class="fsub">${Math.round(f.kcal*f.gpu/100)} kkal / 1 ${f.unit}</div></div>
+        <div class="fkcal">+ Qo'shish</div></div>`;
+    }).join('')+'</div>';
+}
+
+// ══════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════
+let SF=null;
+function openModal(id) {
+  SF=FOODS.find(f=>f.id===id); if(!SF) return;
+  document.getElementById('mtitle').textContent = SF.e+' '+SF.nm;
+  document.getElementById('msub').textContent   = SF.ru;
+  document.getElementById('qinp').value         = 1;
+  document.getElementById('munits').innerHTML   =
+    `<button class="ubtn on" data-unit="${SF.unit}" onclick="selUnit(this)">${SF.unit.charAt(0).toUpperCase()+SF.unit.slice(1)}</button>
+     <button class="ubtn" data-unit="g" onclick="selUnit(this)">Gram</button>`;
+  updPrev();
+  document.getElementById('overlay').classList.add('on');
+}
+function selUnit(el) {
+  document.querySelectorAll('.ubtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); updPrev();
+}
+function adjQty(d) {
+  const inp=document.getElementById('qinp'), v=parseFloat(inp.value)||1;
+  inp.value=Math.max(0.1,Math.round((v+d)*10)/10); updPrev();
+}
+function updPrev() {
+  if(!SF) return;
+  const qty=parseFloat(document.getElementById('qinp').value)||1;
+  const uEl=document.querySelector('.ubtn.on');
+  const unit=uEl?uEl.dataset.unit:SF.unit;
+  const g = unit==='g' ? qty : qty*SF.gpu;
+  const kc=SF.kcal*g/100, p=SF.p*g/100, c=SF.c*g/100, f=SF.f*g/100;
+  document.getElementById('mprev-kcal').textContent = Math.round(kc);
+  document.getElementById('mprev-p').textContent    = Math.round(p)+'g';
+  document.getElementById('mprev-c').textContent    = Math.round(c)+'g';
+  document.getElementById('mprev-f').textContent    = Math.round(f)+'g';
+  SF._g=g; SF._kc=kc; SF._p=p; SF._c=c; SF._f=f;
+}
+function confirmAdd() {
+  if(!SF) return; updPrev();
+  const qty=parseFloat(document.getElementById('qinp').value)||1;
+  const uEl=document.querySelector('.ubtn.on');
+  const unit=uEl?uEl.dataset.unit:SF.unit;
+  const entry={foodId:SF.id,name:SF.nm,emoji:SF.e,qty,unit,kcal:SF._kc||0,p:SF._p||0,c:SF._c||0,f:SF._f||0};
+  const a=ld(K.log,{}), dt=todayStr();
+  if(!a[dt]) a[dt]=[];
+  a[dt].push(entry); sv(K.log,a);
+  if(!ld(K.start,null)) sv(K.start,dt);
+  const toastMsg = '✓ '+SF.nm+' qo\'shildi (+'+Math.round(SF._kc||0)+' kkal)';
+  updateStreak(); closeModal(); renderToday();
+  showToast(toastMsg);
+  const fsi = document.getElementById('fsearch'); if(fsi) fsi.value='';
+  const fri = document.getElementById('food-results'); if(fri) fri.innerHTML='';
+}
+function closeModal() { document.getElementById('overlay').classList.remove('on'); SF=null; }
+
+// ══════════════════════════════════════════════════
+// SCANNER
+// ══════════════════════════════════════════════════
+let scanActive=false, scanStream=null, scanInt=null, scanCanvas=null;
+let pendingScan={name:'',brand:'',kcal:0,p:0,c:0,f:0};
+
+async function toggleScan() {
+  scanActive ? stopScan() : startScan();
+}
+async function startScan() {
+  const btn=document.getElementById('scan-toggle');
+  const sts=document.getElementById('scan-status');
+  const ui=document.getElementById('scan-ui');
+  const hint=document.getElementById('scan-hint');
+  const vid=document.getElementById('scan-video');
+  try {
+    sts.textContent='⏳ Kamera yoqilmoqda…';
+    btn.textContent='⏹ To\'xtatish';
+    scanStream=await navigator.mediaDevices.getUserMedia(
+      {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+    vid.srcObject=scanStream; await vid.play();
+    ui.style.display='flex'; hint.style.display='block';
+    sts.innerHTML='<span class="pulse text-og">🔴 Skanerlash davom etmoqda…</span>';
+    scanActive=true;
+    scanCanvas=document.createElement('canvas');
+    scanInt=setInterval(doCapture,900);
+  } catch(e) {
+    sts.textContent='❌ Kameraga ruxsat berilmadi. Brauzer sozlamalarini tekshiring.';
+    btn.textContent='📷 Kamerani Yoqish';
+  }
+}
+function stopScan() {
+  if(scanStream) { scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  if(scanInt) { clearInterval(scanInt); scanInt=null; }
+  const vid=document.getElementById('scan-video');
+  if(vid) vid.srcObject=null;
+  const ui=document.getElementById('scan-ui'); if(ui) ui.style.display='none';
+  const hint=document.getElementById('scan-hint'); if(hint) hint.style.display='none';
+  const btn=document.getElementById('scan-toggle'); if(btn) btn.textContent='📷 Kamerani Yoqish';
+  const sts=document.getElementById('scan-status');
+  if(sts && scanActive) sts.textContent='⏹ Kamera to\'xtatildi.';
+  scanActive=false;
+}
+async function doCapture() {
+  const vid=document.getElementById('scan-video');
+  if(!vid||!vid.videoWidth||!scanCanvas) return;
+  scanCanvas.width=vid.videoWidth; scanCanvas.height=vid.videoHeight;
+  scanCanvas.getContext('2d').drawImage(vid,0,0);
+  if('BarcodeDetector' in window) {
+    try {
+      const bd=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']});
+      const res=await bd.detect(scanCanvas);
+      if(res.length) { onDetected(res[0].rawValue); }
+    } catch(e){}
+  }
+}
+async function onDetected(code) {
+  stopScan();
+  document.getElementById('barcode-inp').value=code;
+  document.getElementById('scan-status').textContent='✅ Kod topildi: '+code;
+  await lookupCode(code);
+}
+async function doBarcode() {
+  const code=document.getElementById('barcode-inp').value.trim();
+  if(!code) { showToast('Shtrihkod kiriting!',true); return; }
+  await lookupCode(code);
+}
+async function lookupCode(code) {
+  const sts=document.getElementById('scan-status');
+  const ra=document.getElementById('scan-res-area');
+  sts.textContent='⏳ Mahsulot qidirilmoqda…';
+  ra.innerHTML='';
+  try {
+    const r=await fetch('https://world.openfoodfacts.org/api/v0/product/'+encodeURIComponent(code)+'.json');
+    const d=await r.json();
+    if(d.status===1&&d.product) {
+      const p=d.product, n=p.nutriments||{};
+      const name=p.product_name||p.product_name_en||p.product_name_ru||'Noma\'lum mahsulot';
+      const brand=p.brands||'';
+      const kc=+(n['energy-kcal_100g']||n['energy-kcal']||0);
+      const pr=+(n.proteins_100g||0), ca=+(n.carbohydrates_100g||0), fa=+(n.fat_100g||0);
+      pendingScan={name,brand,kcal:kc,p:pr,c:ca,f:fa};
+      sts.textContent='✅ Mahsulot topildi!';
+      showScanResult(name,brand,kc,pr,ca,fa);
+    } else {
+      sts.textContent='❌ Mahsulot topilmadi. Nom bo\'yicha pastda qidiring.';
+    }
+  } catch(e) {
+    sts.textContent='❌ Internet aloqasini tekshiring.';
+  }
+}
+function showScanResult(name,brand,kc,pr,ca,fa) {
+  pendingScan={name,brand,kcal:kc,p:pr,c:ca,f:fa};
+  document.getElementById('scan-res-area').innerHTML=`
+    <div class="scan-res">
+      <div class="srname">${name}</div>
+      <div class="srbrand">${brand?brand+' · ':''}<span class="text-gn">Topildi ✓</span></div>
+      <div class="srmacros">
+        <div class="sm"><div class="sm-val text-og">${Math.round(kc)}</div><div class="sm-lbl">kkal/100g</div></div>
+        <div class="sm"><div class="sm-val text-bl">${Math.round(pr)}g</div><div class="sm-lbl">Oqsil</div></div>
+        <div class="sm"><div class="sm-val" style="color:var(--yl)">${Math.round(ca)}g</div><div class="sm-lbl">Uglev.</div></div>
+        <div class="sm"><div class="sm-val text-rd">${Math.round(fa)}g</div><div class="sm-lbl">Yog'</div></div>
+      </div>
+      <div class="fs12 text-mu" style="margin-bottom:10px">Qancha yedingiz (gram):</div>
+      <div class="qrow">
+        <button class="qbtn" onclick="adjScanQ(-10)">−</button>
+        <input class="qinp" id="scan-qty" type="number" value="100" min="1" oninput="updScanPrev()">
+        <button class="qbtn" onclick="adjScanQ(10)">+</button>
+      </div>
+      <div style="text-align:center;font-size:28px;font-weight:900;color:var(--og);margin:8px 0" id="scan-kc-prev">
+        ${Math.round(kc)} kkal
+      </div>
+      <button class="btn btn-primary" onclick="addScanned()">✓ Logga Qo'shish</button>
+    </div>`;
+}
+function adjScanQ(d) {
+  const inp=document.getElementById('scan-qty'); if(!inp) return;
+  inp.value=Math.max(1,(parseFloat(inp.value)||100)+d); updScanPrev();
+}
+function updScanPrev() {
+  const inp=document.getElementById('scan-qty'); if(!inp) return;
+  const g=parseFloat(inp.value)||0;
+  const el=document.getElementById('scan-kc-prev'); if(!el) return;
+  el.textContent=Math.round(pendingScan.kcal*g/100)+' kkal';
+}
+function addScanned() {
+  const g=parseFloat(document.getElementById('scan-qty')?.value)||100;
+  const e={foodId:0,name:pendingScan.name+(pendingScan.brand?' ('+pendingScan.brand+')':''),
+    emoji:'📦',qty:g,unit:'g',
+    kcal:pendingScan.kcal*g/100, p:pendingScan.p*g/100,
+    c:pendingScan.c*g/100, f:pendingScan.f*g/100};
+  const a=ld(K.log,{}), dt=todayStr();
+  if(!a[dt]) a[dt]=[]; a[dt].push(e); sv(K.log,a);
+  if(!ld(K.start,null)) sv(K.start,dt);
+  updateStreak();
+  document.getElementById('scan-res-area').innerHTML='';
+  document.getElementById('barcode-inp').value='';
+  document.getElementById('scan-status').textContent='✅ Qo\'shildi! Yangi skan uchun kamerani yoqing.';
+  showToast('✓ '+pendingScan.name+' qo\'shildi (+'+Math.round(e.kcal)+' kkal)');
+  renderToday();
+}
+
+// ══════════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════════
+let WC=null, CC=null;
+function saveWeight() {
+  const inp=document.getElementById('winp'), kg=parseFloat(inp.value);
+  if(!kg||kg<30||kg>350) { showToast('Vazn noto\'g\'ri!',true); return; }
+  const ws=ld(K.weight,[]), dt=todayStr();
+  const ex=ws.findIndex(w=>w.date===dt);
+  if(ex>=0) ws[ex].kg=kg; else ws.push({date:dt,kg});
+  sv(K.weight,ws);
+  if(!ld(K.start,null)) sv(K.start,dt);
+  showToast('✓ '+kg+' kg saqlandi'); inp.value=''; renderProgress();
+}
+function renderProgress() {
+  const ws=ld(K.weight,[]);
+  const startDate=ld(K.start,todayStr());
+  const start=new Date(startDate), now=new Date();
+  const dEl=Math.max(0,Math.floor((now-start)/86400000));
+  const dLeft=Math.max(0,60-dEl);
+  document.getElementById('goal-start').textContent=startDate;
+  document.getElementById('g-days').textContent=dEl;
+  document.getElementById('g-daysleft').textContent=dLeft;
+
+  let sKg=null, cKg=null, lost=0;
+  if(ws.length){sKg=ws[0].kg; cKg=ws[ws.length-1].kg; lost=sKg-cKg;}
+  const pct=sKg?Math.min(Math.max(lost/20*100,0),100):0;
+  document.getElementById('goal-fill').style.width=pct+'%';
+  document.getElementById('g-pct').textContent=Math.round(pct)+'%';
+  document.getElementById('goal-lost').textContent=lost>0?lost.toFixed(1)+' kg yo\'qotilgan':'Hali boshlanmagan';
+  document.getElementById('goal-rem').textContent=Math.max(0,20-lost).toFixed(1)+' kg qoldi';
+  document.getElementById('ps-start').textContent=sKg?sKg+' kg':'—';
+  document.getElementById('ps-cur').textContent=cKg?cKg+' kg':'—';
+  const plEl=document.getElementById('ps-lost');
+  plEl.textContent=lost>0?('-'+lost.toFixed(1)+' kg'):'0 kg';
+  plEl.style.color=lost>0?'var(--gn)':'var(--mu)';
+
+  const allLog=ld(K.log,{});
+  let totDef=0;
+  for(const dt in allLog){
+    const t=allLog[dt].reduce((s,x)=>s+x.kcal,0);
+    totDef+=Math.max(0,2900-t);
+  }
+  document.getElementById('ps-def').textContent=Math.round(totDef).toLocaleString()+' kkal';
+  document.getElementById('streak-count').textContent=getStreak();
+
+  buildWChart(ws); buildCChart(allLog);
+}
+function buildWChart(ws) {
+  const ctx=document.getElementById('wchart').getContext('2d');
+  if(WC){WC.destroy();WC=null;}
+  if(!ws.length){
+    ctx.clearRect(0,0,500,200);
+    ctx.fillStyle='rgba(241,245,249,0.25)';ctx.font='14px sans-serif';ctx.textAlign='center';
+    ctx.fillText('Hali vazn kiritilmagan',250,100); return;
+  }
+  WC=new Chart(ctx,{type:'line',data:{
+    labels:ws.map(w=>w.date.slice(5)),
+    datasets:[{label:'kg',data:ws.map(w=>w.kg),borderColor:'#ff6b35',
+      backgroundColor:'rgba(255,107,53,0.1)',borderWidth:2.5,
+      pointBackgroundColor:'#ff6b35',pointRadius:5,tension:0.4,fill:true}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'rgba(241,245,249,0.5)',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}},
+            y:{ticks:{color:'rgba(241,245,249,0.5)',font:{size:11},callback:v=>v+' kg'},grid:{color:'rgba(255,255,255,0.05)'}}}}});
+}
+function buildCChart(al) {
+  const ctx=document.getElementById('cchart').getContext('2d');
+  if(CC){CC.destroy();CC=null;}
+  const days=Array.from({length:7},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-(6-i));
+    const k=d.toISOString().slice(0,10);
+    const kc=Math.round((al[k]||[]).reduce((s,x)=>s+x.kcal,0));
+    return{label:k.slice(5),kc};
+  });
+  CC=new Chart(ctx,{type:'bar',data:{
+    labels:days.map(d=>d.label),
+    datasets:[{data:days.map(d=>d.kc),
+      backgroundColor:days.map(d=>d.kc>1400?'rgba(239,68,68,.6)':'rgba(255,107,53,.6)'),
+      borderColor:days.map(d=>d.kc>1400?'#ef4444':'#ff6b35'),
+      borderWidth:1.5,borderRadius:8}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'rgba(241,245,249,0.5)',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}},
+            y:{suggestedMax:1600,suggestedMin:0,
+              ticks:{color:'rgba(241,245,249,0.5)',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  }});
+}
+
+// ══════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════
+let tTimer=null;
+function showToast(msg,err) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast'+(err?' err':'');
+  el.classList.add('on');
+  if(tTimer) clearTimeout(tTimer);
+  tTimer=setTimeout(()=>el.classList.remove('on'),2800);
+}
+
+// ══════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════
+function confirmReset() {
+  if(confirm('Barcha ma\'lumotlar o\'chiriladi. Davom etasizmi?')) {
+    Object.values(K).forEach(k=>localStorage.removeItem(k));
+    showToast('✓ Tozalandi'); init();
+  }
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+function init() {
+  renderHeader();
+  renderToday();
+  renderQuickFoods();
+}
+init();
+</script>
+</body>
+</html>
